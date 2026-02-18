@@ -6,7 +6,7 @@ A starter kit demonstrating how to integrate the OpenGov Agent SDK into a React 
 
 ## Tech Stack
 
-- React 18.2
+- React 19
 - TypeScript
 - Vite
 - OpenGov Components Nav Bar
