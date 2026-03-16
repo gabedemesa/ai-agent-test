@@ -1,0 +1,33 @@
+name: Claude PR Review
+
+permissions:
+    contents: read
+    pull-requests: write
+    id-token: write
+
+on:
+    pull_request:
+        types: [opened, ready_for_review, synchronize]
+
+jobs:
+    claude-review:
+        if: ${{ !github.event.pull_request.draft && github.actor != 'dependabot[bot]' && github.event.pull_request.head.repo.full_name == github.repository }}
+        runs-on: gha-runner-scale-set-ai-agent
+        env:
+            AWS_REGION: us-west-2
+            AWS_BEARER_TOKEN_BEDROCK: ${{ secrets.AWS_BEARER_TOKEN_BEDROCK }}
+        steps:
+            - name: Checkout repository
+              uses: actions/checkout@v5
+              with:
+                  fetch-depth: 1
+            - uses: anthropics/claude-code-action@v1
+              continue-on-error: true
+              with:
+                  use_bedrock: "true"
+                  prompt: "Review this pull request using the code-review plugin"
+                  plugins: "code-review@claude-code-plugins"
+                  claude_args: |
+                      --model us.anthropic.claude-sonnet-4-6
+                      --max-turns 25
+                      --allowedTools "mcp__github__pull_request_review_write,mcp__github__add_comment_to_pending_review,mcp__github__get_pull_request,mcp__github__get_pull_request_diff,mcp__github__list_pull_request_files,mcp__github__list_pull_request_commits,mcp__github__get_pull_request_reviews,mcp__github__get_file_contents"
